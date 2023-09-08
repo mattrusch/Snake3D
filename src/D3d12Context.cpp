@@ -8,6 +8,7 @@
 #include "d3dx12.h"
 #include <wrl.h>
 #include "Window.h"
+#include "Snake3D.h"
 #include <cassert>
 
 constexpr size_t ALIGN_256(size_t in)
@@ -25,7 +26,8 @@ class D3dContext
 {
 public:
     static const UINT   kFrameCount      = 2;
-    static const size_t kConstBufferSize = 1024 * 64;
+    //static const size_t kConstBufferSize = 1024 * 64; // TODO: Delete me
+    static const size_t kConstBufferSize = Snake::NumGamePieces * ALIGN_256(sizeof(SceneConstantBuffer));
 
     Microsoft::WRL::ComPtr<IDXGISwapChain3>           mSwapChain;
     Microsoft::WRL::ComPtr<ID3D12Device>              mDevice;
@@ -582,7 +584,7 @@ void PopulateCommandList()
     // Set root descriptor table
     gDevice.mCommandList->SetGraphicsRootDescriptorTable(0, gDevice.mCbvSrvHeap->GetGPUDescriptorHandleForHeapStart());
 
-    // Set root command buffer view for first instance
+    // Set root constant buffer view for first instance
     gDevice.mCommandList->SetGraphicsRootConstantBufferView(1, gDevice.mConstantBuffer->GetGPUVirtualAddress());
 
     gDevice.mCommandList->RSSetViewports(1, &gDevice.mViewport);
@@ -623,9 +625,104 @@ void PopulateCommandList()
     D3D_CHECK(gDevice.mCommandList->Close());
 }
 
+void PopulateCommandList(size_t numGamePieces)
+{
+    // Command list allocators can only be reset when the associated command lists have finished execution on the GPU; use fences to determine GPU execution progress
+    D3D_CHECK(gDevice.mCommandAllocator->Reset());
+
+    // When ExecuteCommandList() is called on a particular command list, that command list can then be reset at any time and must be before re-recording
+    D3D_CHECK(gDevice.mCommandList->Reset(gDevice.mCommandAllocator.Get(), gDevice.mPipelineState.Get()));
+
+    // Set necessary state
+    gDevice.mCommandList->SetGraphicsRootSignature(gDevice.mRootSignature.Get());
+
+    // Set descriptor heaps
+    ID3D12DescriptorHeap* ppHeaps[] = { gDevice.mCbvSrvHeap.Get() };
+    gDevice.mCommandList->SetDescriptorHeaps(_countof(ppHeaps), ppHeaps);
+
+    // Set root descriptor table
+    gDevice.mCommandList->SetGraphicsRootDescriptorTable(0, gDevice.mCbvSrvHeap->GetGPUDescriptorHandleForHeapStart());
+
+    gDevice.mCommandList->RSSetViewports(1, &gDevice.mViewport);
+    gDevice.mCommandList->RSSetScissorRects(1, &gDevice.mScissorRect);
+
+    // Indicate that the back buffer will be used as a render target
+    CD3DX12_RESOURCE_BARRIER rtResourceBarrier = CD3DX12_RESOURCE_BARRIER::Transition(
+        gDevice.mRenderTargets[gDevice.mFrameIndex].Get(),
+        D3D12_RESOURCE_STATE_PRESENT,
+        D3D12_RESOURCE_STATE_RENDER_TARGET);
+    gDevice.mCommandList->ResourceBarrier(1, &rtResourceBarrier);
+
+    CD3DX12_CPU_DESCRIPTOR_HANDLE rtvHandle(gDevice.mRtvHeap->GetCPUDescriptorHandleForHeapStart(), gDevice.mFrameIndex, gDevice.mRtvDescriptorSize);
+    CD3DX12_CPU_DESCRIPTOR_HANDLE dsvHandle(gDevice.mDsvHeap->GetCPUDescriptorHandleForHeapStart());
+    gDevice.mCommandList->OMSetRenderTargets(1, &rtvHandle, FALSE, &dsvHandle);
+
+    // Record commands
+    const float clearColor[] = { 0.65f, 0.65f, 0.85f, 1.0f };
+    gDevice.mCommandList->ClearRenderTargetView(rtvHandle, clearColor, 0, nullptr);
+    gDevice.mCommandList->ClearDepthStencilView(dsvHandle, D3D12_CLEAR_FLAG_DEPTH, 1.0f, 0, 0, nullptr);
+    gDevice.mCommandList->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
+    gDevice.mCommandList->IASetVertexBuffers(0, 1, &gDevice.mVertexBufferView);
+    gDevice.mCommandList->IASetIndexBuffer(&gDevice.mIndexBufferView);
+    
+    // Set root constant buffer view for instance
+    for (int i = 0; i < numGamePieces; i++)
+    {
+        gDevice.mCommandList->SetGraphicsRootConstantBufferView(1, gDevice.mConstantBuffer->GetGPUVirtualAddress() + ALIGN_256(sizeof(SceneConstantBuffer)) * i);
+        gDevice.mCommandList->DrawIndexedInstanced(36, 1, 0, 0, 0);
+    }
+
+    CD3DX12_RESOURCE_BARRIER presentResourceBarrier = CD3DX12_RESOURCE_BARRIER::Transition(gDevice.mRenderTargets[gDevice.mFrameIndex].Get(), D3D12_RESOURCE_STATE_RENDER_TARGET, D3D12_RESOURCE_STATE_PRESENT);
+    // Indicate that the back buffer will now be used to present
+    gDevice.mCommandList->ResourceBarrier(1, &presentResourceBarrier);
+
+    D3D_CHECK(gDevice.mCommandList->Close());
+}
+
 void Render()
 {
     PopulateCommandList();
+
+    ID3D12CommandList* ppCommandLists[] = { gDevice.mCommandList.Get() };
+    gDevice.mCommandQueue->ExecuteCommandLists(_countof(ppCommandLists), ppCommandLists);
+
+    D3D_CHECK(gDevice.mSwapChain->Present(1, 0));
+
+    WaitForPreviousFrame();
+}
+
+void Render(const Snake::GamePiece* const* gamePieces, size_t numGamePieces, const DirectX::XMMATRIX& lookAt, float elapsedSeconds)
+{
+    static float totalRotation = 0.0f;
+    totalRotation += elapsedSeconds * 0.5f;
+
+    DirectX::XMMATRIX matRotation = DirectX::XMMatrixRotationY(totalRotation);
+    DirectX::XMMATRIX matLookAt = lookAt; // DirectX::XMMatrixLookAtLH({ 0.0f, 1.0f, -4.0f, 0.0f }, { 0.0f, 0.0f, 0.0f, 0.0f }, { 0.0f, 1.0f, 0.0f, 0.0f });
+    DirectX::XMMATRIX matPerspective = DirectX::XMMatrixPerspectiveFovLH(1.0f, static_cast<float>(gWidth) / static_cast<float>(gHeight), 0.1f, 10.0f);
+
+    //// CB for first instance
+    //DirectX::XMMATRIX worldViewProj = matRotation * matLookAt * matPerspective;
+    //memcpy(gDevice.mpCbvDataBegin, &worldViewProj, sizeof(worldViewProj));
+
+    //// CB for second instance
+    //size_t offset = ALIGN_256(sizeof(worldViewProj));
+    //worldViewProj = matRotation * DirectX::XMMatrixTranslation(0.75f, 0.0f, 0.0f) * matLookAt * matPerspective;
+    //memcpy(gDevice.mpCbvDataBegin + offset, &worldViewProj, sizeof(worldViewProj));
+
+    //// CB for third instance
+    //offset += ALIGN_256(sizeof(worldViewProj));
+    //worldViewProj = matRotation * DirectX::XMMatrixTranslation(-0.75f, 0.0f, 0.0f) * matLookAt * matPerspective;
+    //memcpy(gDevice.mpCbvDataBegin + offset, &worldViewProj, sizeof(worldViewProj));
+
+    DirectX::XMMATRIX worldViewProj = matRotation * matLookAt * matPerspective;
+    for (int i = 0; i < numGamePieces; i++)
+    {
+        size_t offset = ALIGN_256(sizeof(worldViewProj)) * i;
+        worldViewProj = matRotation * DirectX::XMMatrixTranslationFromVector(gamePieces[i]->mPosition) * matLookAt * matPerspective;
+        memcpy(gDevice.mpCbvDataBegin + offset, &worldViewProj, sizeof(worldViewProj));
+    }
+
+    PopulateCommandList(numGamePieces);
 
     ID3D12CommandList* ppCommandLists[] = { gDevice.mCommandList.Get() };
     gDevice.mCommandQueue->ExecuteCommandLists(_countof(ppCommandLists), ppCommandLists);

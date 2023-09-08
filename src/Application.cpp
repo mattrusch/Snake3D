@@ -16,6 +16,19 @@ namespace Vnm
 
         Init(mWindow.GetHandle());
         mCamera.SetPosition(DirectX::XMVectorSet(0.0f, 0.0f, -4.0f, 0.0f));
+
+        mGameBoard.Init();
+
+        for (int i = 0; i < Snake::NumPiecesX; i++)
+        {
+            for (int j = 0; j < Snake::NumPiecesY; j++)
+            {
+                for (int k = 0; k < Snake::NumPiecesZ; k++)
+                {
+                    mGameBoard.PlaceGamePiece(i, j, k, DirectX::XMVectorSet(0.0f, 1.0f, 0.0f, 1.0f), 10);
+                }
+            }
+        }
     }
 
     void Application::Mainloop()
@@ -26,7 +39,10 @@ namespace Vnm
         float elapsedSeconds = static_cast<float>(elapsedTime) * 0.001f;
 
         Update( mCamera.CalcLookAt(), elapsedSeconds );
-        Render();
+        //Render();
+        size_t numGamePieces;
+        const Snake::GamePiece* const* gamePieces = mGameBoard.GetGamePieces( &numGamePieces );
+        Render( gamePieces, numGamePieces, mCamera.CalcLookAt(), elapsedSeconds );
     }
 
     void Application::Shutdown()

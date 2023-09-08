@@ -4,6 +4,7 @@
 
 #include "Window.h"
 #include "Camera.h"
+#include "Snake3D.h"
 
 namespace Vnm
 {
@@ -20,6 +21,8 @@ namespace Vnm
 
         void OnKeyDown(UINT8 key);
     private:
+        Snake::GameBoard mGameBoard;
+
         Window mWindow;
         Camera mCamera;
     };

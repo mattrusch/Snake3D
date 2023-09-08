@@ -12,7 +12,7 @@ namespace Snake
 {
     static size_t CalcIndex(int xBlock, int yBlock, int zBlock)
     {
-        return xBlock + yBlock * NumPiecesX + zBlock * NumPiecesX & NumPiecesY;
+        return xBlock + yBlock * NumPiecesX + zBlock * NumPiecesX * NumPiecesY;
     }
 
     void GameBoard::Init()
@@ -56,6 +56,15 @@ namespace Snake
         return result;
     }
 
+    const GamePiece* const* GameBoard::GetGamePieces(size_t* outNumGamePieces) const
+    {
+        if (outNumGamePieces != nullptr)
+        {
+            *outNumGamePieces = ArraySize(mGamePieces);
+        }
+        return mGamePieces;
+    }
+
     void GameBoard::FreeGamePiece(GamePiece* gamePiece)
     {
         gamePiece->mNext = mGamePieceFreeList;
@@ -64,11 +73,13 @@ namespace Snake
 
     void GameBoard::PlaceGamePiece(int xBlock, int yBlock, int zBlock, const DirectX::XMVECTOR& color, int remainingTicks)
     {
-        assert(mGamePieces[CalcIndex(xBlock, yBlock, zBlock)] == nullptr);
+        size_t index = CalcIndex(xBlock, yBlock, zBlock);
+        assert(mGamePieces[index] == nullptr);
         
         GamePiece* gamePiece = AllocGamePiece();
         gamePiece->mRemainingTicks = remainingTicks;
         gamePiece->mColor = DirectX::XMVectorSet(1.0f, 1.0f, 1.0f, 1.0f);
-        mGamePieces[CalcIndex(xBlock, yBlock, zBlock)] = gamePiece;
+        gamePiece->mPosition = GetPosition(xBlock, yBlock, zBlock);
+        mGamePieces[index] = gamePiece;
     }
 } // namespace Snake
