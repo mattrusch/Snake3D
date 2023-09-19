@@ -14,8 +14,8 @@ namespace Snake
 
         DirectX::XMVECTOR mColor;
         DirectX::XMVECTOR mPosition;
+        GamePiece* mNext;
         int               mRemainingTicks;
-        GamePiece*        mNext;
     };
 
     constexpr size_t NumPiecesX = 16;
@@ -37,6 +37,7 @@ namespace Snake
         const GamePiece* const* GetGamePieces(size_t* outNumGamePieces) const;
 
     private:
+        // TODO: Turn GamePiecePool and mGamePieceFreeList (as well as corresponding alloc / free) into a pooled resource class
         GamePiece  mGamePiecePool[NumGamePieces];   // Pool of all gamepieces, contains enough to fill board completely
         GamePiece* mGamePieces[NumGamePieces];      // Locations on the board; can point to a game piece or be null
         GamePiece* mGamePieceFreeList;              // Allocation convenience

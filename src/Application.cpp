@@ -39,7 +39,6 @@ namespace Vnm
         float elapsedSeconds = static_cast<float>(elapsedTime) * 0.001f;
 
         Update( mCamera.CalcLookAt(), elapsedSeconds );
-        //Render();
         size_t numGamePieces;
         const Snake::GamePiece* const* gamePieces = mGameBoard.GetGamePieces( &numGamePieces );
         Render( gamePieces, numGamePieces, mCamera.CalcLookAt(), elapsedSeconds );
