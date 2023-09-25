@@ -358,7 +358,7 @@ void InitAssets()
     D3D_CHECK(gDevice.mDevice->CreateCommandList(0, D3D12_COMMAND_LIST_TYPE_DIRECT, gDevice.mCommandAllocator.Get(), gDevice.mPipelineState.Get(), IID_PPV_ARGS(&gDevice.mCommandList)));
 
     // Create the vertex buffer
-    const float cubeScale = 0.25f;
+    const float cubeScale = 0.5f;
     Vertex triangleVerts[] =
     {
         // Top
@@ -621,8 +621,9 @@ void PopulateCommandList(size_t numGamePieces)
 
 void Render(const Snake::GamePiece* const* gamePieces, size_t numGamePieces, const DirectX::XMMATRIX& lookAt, float elapsedSeconds)
 {
+    // TODO: Pull out ambient rotation code once sure it's unwanted
     static float totalRotation = 0.0f;
-    totalRotation += elapsedSeconds * 0.5f;
+    //totalRotation += elapsedSeconds * 0.5f;
 
     DirectX::XMMATRIX matRotation = DirectX::XMMatrixRotationY(totalRotation);
     DirectX::XMMATRIX matLookAt = lookAt;
@@ -631,6 +632,11 @@ void Render(const Snake::GamePiece* const* gamePieces, size_t numGamePieces, con
     DirectX::XMMATRIX worldViewProj = matRotation * matLookAt * matPerspective;
     for (int i = 0; i < numGamePieces; i++)
     {
+        if (gamePieces[i] == nullptr)
+        {
+            continue;
+        }
+
         size_t offset = ALIGN_256(sizeof(worldViewProj)) * i;
         worldViewProj = matRotation * DirectX::XMMatrixTranslationFromVector(gamePieces[i]->mPosition) * matLookAt * matPerspective;
         memcpy(gDevice.mpCbvDataBegin + offset, &worldViewProj, sizeof(worldViewProj));
@@ -655,15 +661,13 @@ void Destroy()
 
 void InitTexture(char* dst, uint32_t width, uint32_t height, uint32_t bpp)
 {
-    uint8_t range = 0x40;
-
     for (uint32_t j = 0; j < height; ++j)
     {
         for (uint32_t i = 0; i < width; ++i)
         {
-            dst[j * (width * bpp) + (i * bpp) + 0] = i % 16 < 8 && j % 8 < 4 ? 0xff : (abs(rand()) % range) + (0xff - range);
-            dst[j * (width * bpp) + (i * bpp) + 1] = i % 16 < 8 && j % 8 < 4 ? 0xff : (abs(rand()) % range) + (0xff - range);
-            dst[j * (width * bpp) + (i * bpp) + 2] = i % 16 < 8 && j % 8 < 4 ? 0xff : (abs(rand()) % range) + (0xff - range);
+            dst[j * (width * bpp) + (i * bpp) + 0] = !(i % 16 < 8) != !(j % 16 < 8) ? 0xff : 0;
+            dst[j * (width * bpp) + (i * bpp) + 1] = !(i % 16 < 8) != !(j % 16 < 8) ? 0xff : 0;
+            dst[j * (width * bpp) + (i * bpp) + 2] = !(i % 16 < 8) != !(j % 16 < 8) ? 0xff : 0;
             dst[j * (width * bpp) + (i * bpp) + 3] = 0xffu;
         }
     }

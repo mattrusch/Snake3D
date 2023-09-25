@@ -15,17 +15,23 @@ namespace Vnm
         mWindow.Create(instance, cmdShow, winDesc);
 
         Init(mWindow.GetHandle());
-        mCamera.SetPosition(DirectX::XMVectorSet(0.0f, 0.0f, -4.0f, 0.0f));
+        mCamera.SetPosition(DirectX::XMVectorSet(5.0f, 5.0f, 5.0f, 0.0f));
 
         mGameBoard.Init();
 
+        // Place pieces around the borders
         for (int i = 0; i < Snake::NumPiecesX; i++)
         {
             for (int j = 0; j < Snake::NumPiecesY; j++)
             {
                 for (int k = 0; k < Snake::NumPiecesZ; k++)
                 {
-                    mGameBoard.PlaceGamePiece(i, j, k, DirectX::XMVectorSet(0.0f, 1.0f, 0.0f, 1.0f), 10);
+                    if ((i == 0) || (i == Snake::NumPiecesX - 1) ||
+                        (j == 0) || (j == Snake::NumPiecesY - 1) ||
+                        (k == 0) || (k == Snake::NumPiecesZ - 1))
+                    {
+                        mGameBoard.PlaceGamePiece(i, j, k, DirectX::XMVectorSet(0.0f, 1.0f, 0.0f, 1.0f), 10);
+                    }
                 }
             }
         }
