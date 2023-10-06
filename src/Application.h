@@ -19,11 +19,13 @@ namespace Vnm
         void Mainloop();
         void Shutdown();
 
+        void OnKeyUp(UINT8 key);
         void OnKeyDown(UINT8 key);
     private:
         Snake::GameBoard mGameBoard;
 
-        Window mWindow;
-        Camera mCamera;
+        Window   mWindow;
+        Camera   mCamera;
+        uint32_t mMoveState = 0;
     };
 }

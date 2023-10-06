@@ -5,6 +5,13 @@
 
 namespace Vnm
 {
+    constexpr uint32_t MoveForwardBit = 1 << 0;
+    constexpr uint32_t MoveBackBit    = 1 << 1;
+    constexpr uint32_t TurnLeftBit    = 1 << 2;
+    constexpr uint32_t TurnRightBit   = 1 << 3;
+    constexpr uint32_t TiltUpBit      = 1 << 4;
+    constexpr uint32_t TiltDownBit    = 1 << 5;
+
     void Application::Startup(HINSTANCE instance, int cmdShow)
     {
         // Create main window and device
@@ -37,12 +44,45 @@ namespace Vnm
         }
     }
 
+    static void HandleMovement(uint32_t key, Camera& camera)
+    {
+        const float rotationScale = 0.01f;
+        const float forwardScale = 0.1f;
+
+        if (key & MoveForwardBit)
+        {
+            camera.MoveForward(forwardScale);
+        }
+        if (key & MoveBackBit)
+        {
+            camera.MoveForward(-forwardScale);
+        }
+        if (key & TurnLeftBit)
+        {
+            camera.Yaw(-DirectX::XM_PI * rotationScale);
+        }
+        if (key & TurnRightBit)
+        {
+            camera.Yaw(DirectX::XM_PI * rotationScale);
+        }
+        if (key & TiltDownBit)
+        {
+            camera.Pitch(DirectX::XM_PI * rotationScale);
+        }
+        if (key & TiltUpBit)
+        {
+            camera.Pitch(-DirectX::XM_PI * rotationScale);
+        }
+    }
+
     void Application::Mainloop()
     {
         static uint32_t lastTime = GetTickCount();
         uint32_t elapsedTime = GetTickCount() - lastTime;
         lastTime = GetTickCount();
         float elapsedSeconds = static_cast<float>(elapsedTime) * 0.001f;
+
+        HandleMovement(mMoveState, mCamera);
 
         Update( mCamera.CalcLookAt(), elapsedSeconds );
         size_t numGamePieces;
@@ -55,32 +95,64 @@ namespace Vnm
         mWindow.Destroy();
     }
 
-    void Application::OnKeyDown(UINT8 key)
+    void Application::OnKeyUp(UINT8 key)
     {
-        const float rotationScale = 0.01f;
-        const float forwardScale = 0.1f;
-
         switch (key)
         {
         case VK_SPACE:
-            mCamera.MoveForward(forwardScale);
+            mMoveState &= ~MoveForwardBit;
             break;
         case VK_SHIFT:
-            mCamera.MoveForward(-forwardScale);
+            mMoveState &= ~MoveBackBit;
             break;
         case VK_LEFT:
-            mCamera.Yaw( -DirectX::XM_PI * rotationScale );
+        case 'A':
+            mMoveState &= ~TurnLeftBit;
             break;
         case VK_RIGHT:
-            mCamera.Yaw( DirectX::XM_PI * rotationScale );
+        case 'D':
+            mMoveState &= ~TurnRightBit;
             break;
         case VK_UP:
-            mCamera.Pitch( DirectX::XM_PI * rotationScale );
+        case 'W':
+            mMoveState &= ~TiltDownBit;
             break;
         case VK_DOWN:
-            mCamera.Pitch( -DirectX::XM_PI * rotationScale );
+        case 'S':
+            mMoveState &= ~TiltUpBit;
             break;
         default: break;
         }
     }
+
+    void Application::OnKeyDown(UINT8 key)
+    {
+        switch (key)
+        {
+        case VK_SPACE:
+            mMoveState |= MoveForwardBit;
+            break;
+        case VK_SHIFT:
+            mMoveState |= MoveBackBit;
+            break;
+        case VK_LEFT:
+        case 'A':
+            mMoveState |= TurnLeftBit;
+            break;
+        case VK_RIGHT:
+        case 'D':
+            mMoveState |= TurnRightBit;
+            break;
+        case VK_UP:
+        case 'W':
+            mMoveState |= TiltDownBit;
+            break;
+        case VK_DOWN:
+        case 'S':
+            mMoveState |= TiltUpBit;
+            break;
+        default: break;
+        }
+    }
+
 }

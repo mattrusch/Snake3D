@@ -32,6 +32,7 @@ namespace Vnm
         void Create(HINSTANCE instance, int cmdShow, const WindowDesc& desc);
         void Destroy();
         void OnKeyDown(UINT8 key);
+        void OnKeyUp(UINT8 key);
 
         HWND GetHandle() const { return mHandle; }
     private:

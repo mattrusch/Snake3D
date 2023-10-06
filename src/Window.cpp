@@ -26,6 +26,12 @@ LRESULT CALLBACK DefaultWndProc(HWND hwnd, UINT message, WPARAM wparam, LPARAM l
         }
 
         break;
+    case WM_KEYUP:
+        if (pWindow != nullptr)
+        {
+            pWindow->OnKeyUp(static_cast<UINT8>(wparam));
+        }
+        break;
     case WM_DESTROY:
         PostQuitMessage(0);
         break;
@@ -78,6 +84,15 @@ namespace Vnm
         if (mApplication != nullptr)
         {
             mApplication->OnKeyDown(key);
+        }
+    }
+
+    void Window::OnKeyUp(UINT8 key)
+    {
+        // Forward to application
+        if (mApplication != nullptr)
+        {
+            mApplication->OnKeyUp(key);
         }
     }
 
