@@ -22,7 +22,8 @@ namespace Vnm
         mWindow.Create(instance, cmdShow, winDesc);
 
         Init(mWindow.GetHandle());
-        mCamera.SetPosition(DirectX::XMVectorSet(5.0f, 5.0f, 5.0f, 0.0f));
+        mFreeCamera.SetPosition(DirectX::XMVectorSet(5.0f, 5.0f, 5.0f, 0.0f));
+        mGameCamera.SetPosition(DirectX::XMVectorSet(5.0f, 5.0f, 5.0f, 0.0f));
 
         mGameBoard.Init();
 
@@ -82,12 +83,12 @@ namespace Vnm
         lastTime = GetTickCount();
         float elapsedSeconds = static_cast<float>(elapsedTime) * 0.001f;
 
-        HandleMovement(mMoveState, mCamera);
+        HandleMovement(mMoveState, *mCurCamera);
 
-        Update( mCamera.CalcLookAt(), elapsedSeconds );
+        Update( mCurCamera->CalcLookAt(), elapsedSeconds );
         size_t numGamePieces;
         const Snake::GamePiece* const* gamePieces = mGameBoard.GetGamePieces( &numGamePieces );
-        Render( gamePieces, numGamePieces, mCamera.CalcLookAt(), elapsedSeconds );
+        Render( gamePieces, numGamePieces, mCurCamera->CalcLookAt(), elapsedSeconds );
     }
 
     void Application::Shutdown()
@@ -125,10 +126,19 @@ namespace Vnm
         }
     }
 
+    void Application::ToggleGameState()
+    {
+        // Swap active camera
+        mCurCamera = mCurCamera == &mFreeCamera ? &mGameCamera : &mFreeCamera;
+    }
+
     void Application::OnKeyDown(UINT8 key)
     {
         switch (key)
         {
+        case VK_TAB:
+            ToggleGameState();
+            break;
         case VK_SPACE:
             mMoveState |= MoveForwardBit;
             break;

@@ -21,11 +21,18 @@ namespace Vnm
 
         void OnKeyUp(UINT8 key);
         void OnKeyDown(UINT8 key);
+
+        bool GameIsActive() const { return mCurCamera == &mGameCamera; }
+
     private:
+        void ToggleGameState();
+
         Snake::GameBoard mGameBoard;
 
-        Window   mWindow;
-        Camera   mCamera;
-        uint32_t mMoveState = 0;
+        Window    mWindow;
+        Camera    mFreeCamera;
+        Camera    mGameCamera;
+        Camera*   mCurCamera = &mFreeCamera;
+        uint32_t  mMoveState = 0;
     };
 }

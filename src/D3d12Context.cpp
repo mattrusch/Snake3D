@@ -547,22 +547,13 @@ void Update(const DirectX::XMMATRIX& lookAt, float elapsedSeconds)
     totalRotation += elapsedSeconds * 0.5f;
 
     DirectX::XMMATRIX matRotation = DirectX::XMMatrixRotationY(totalRotation);
-    DirectX::XMMATRIX matLookAt = lookAt; // DirectX::XMMatrixLookAtLH({ 0.0f, 1.0f, -4.0f, 0.0f }, { 0.0f, 0.0f, 0.0f, 0.0f }, { 0.0f, 1.0f, 0.0f, 0.0f });
+    DirectX::XMMATRIX matLookAt = lookAt; 
+    //DirectX::XMMATRIX matLookAt = DirectX::XMMatrixLookAtLH({ 0.0f, 1.0f, -4.0f, 0.0f }, { 0.0f, 0.0f, 0.0f, 0.0f }, { 0.0f, 1.0f, 0.0f, 0.0f });
     DirectX::XMMATRIX matPerspective = DirectX::XMMatrixPerspectiveFovLH(1.0f, static_cast<float>(gWidth) / static_cast<float>(gHeight), 0.1f, 10.0f);
 
-    // CB for first instance
+    // Update CB
     DirectX::XMMATRIX worldViewProj = matRotation * matLookAt * matPerspective;
     memcpy(gDevice.mpCbvDataBegin, &worldViewProj, sizeof(worldViewProj));
-
-    // CB for second instance
-    size_t offset = ALIGN_256(sizeof(worldViewProj));
-    worldViewProj = matRotation * DirectX::XMMatrixTranslation(0.75f, 0.0f, 0.0f) * matLookAt * matPerspective;
-    memcpy(gDevice.mpCbvDataBegin + offset, &worldViewProj, sizeof(worldViewProj));
-
-    // CB for third instance
-    offset += ALIGN_256(sizeof(worldViewProj));
-    worldViewProj = matRotation * DirectX::XMMatrixTranslation(-0.75f, 0.0f, 0.0f) * matLookAt * matPerspective;
-    memcpy(gDevice.mpCbvDataBegin + offset, &worldViewProj, sizeof(worldViewProj));
 }
 
 void PopulateCommandList(size_t numGamePieces)
