@@ -22,7 +22,12 @@ LRESULT CALLBACK DefaultWndProc(HWND hwnd, UINT message, WPARAM wparam, LPARAM l
 
         if (pWindow != nullptr)
         {
-            pWindow->OnKeyDown(static_cast<UINT8>(wparam));
+            WORD keyFlags = HIWORD(lparam);
+            bool repeat = (keyFlags & KF_REPEAT) == KF_REPEAT;
+            if (!repeat)
+            {
+                pWindow->OnKeyDown(static_cast<UINT8>(wparam));
+            }
         }
 
         break;

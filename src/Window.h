@@ -36,7 +36,7 @@ namespace Vnm
 
         HWND GetHandle() const { return mHandle; }
     private:
-        Application* mApplication;  // For messaging
+        Application* mApplication = nullptr;  // For messaging
         HWND         mHandle;
     };
 }

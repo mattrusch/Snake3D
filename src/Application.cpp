@@ -76,6 +76,31 @@ namespace Vnm
         }
     }
 
+    static void HandleMovementGame(uint32_t key, Camera& camera)
+    {
+        const float rotationScale = 0.5f;
+        const float forwardScale = 0.01f;
+
+        camera.MoveForward(forwardScale);
+
+        if (key & TurnLeftBit)
+        {
+            camera.Yaw(-DirectX::XM_PI * rotationScale);
+        }
+        if (key & TurnRightBit)
+        {
+            camera.Yaw(DirectX::XM_PI * rotationScale);
+        }
+        if (key & TiltDownBit)
+        {
+            camera.Pitch(DirectX::XM_PI * rotationScale);
+        }
+        if (key & TiltUpBit)
+        {
+            camera.Pitch(-DirectX::XM_PI * rotationScale);
+        }
+    }
+
     void Application::Mainloop()
     {
         static uint32_t lastTime = GetTickCount();
@@ -83,7 +108,15 @@ namespace Vnm
         lastTime = GetTickCount();
         float elapsedSeconds = static_cast<float>(elapsedTime) * 0.001f;
 
-        HandleMovement(mMoveState, *mCurCamera);
+        if (GameIsActive())
+        {
+            HandleMovementGame(mMoveState, *mCurCamera);
+            mMoveState = 0;
+        }
+        else
+        {
+            HandleMovement(mMoveState, *mCurCamera);
+        }
 
         Update( mCurCamera->CalcLookAt(), elapsedSeconds );
         size_t numGamePieces;

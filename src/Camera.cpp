@@ -20,7 +20,8 @@ namespace Vnm
 
     void Camera::Yaw(float radians)
     {
-        DirectX::XMMATRIX rotation = DirectX::XMMatrixRotationAxis(DirectX::XMVectorSet(0.0f, 1.0, 0.0f, 0.0f), radians);
+        //DirectX::XMMATRIX rotation = DirectX::XMMatrixRotationAxis(DirectX::XMVectorSet(0.0f, 1.0, 0.0f, 0.0f), radians);
+        DirectX::XMMATRIX rotation = DirectX::XMMatrixRotationAxis(mUp, radians);
         mForward = DirectX::XMVector3Transform(mForward, rotation);
         mRight = DirectX::XMVector3Transform(mRight, rotation);
         mUp = DirectX::XMVector3Transform(mUp, rotation);
