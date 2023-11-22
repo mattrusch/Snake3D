@@ -41,6 +41,17 @@ namespace Snake
             1.0f);
     }
 
+    void GameBoard::GetBlockCoords(const DirectX::XMVECTOR& position, int& xBlockOut, int& yBlockOut, int& zBlockOut) const
+    {
+        float blockSizeX = mBoardWorldScale[0] / static_cast<float>(NumPiecesX);
+        float blockSizeY = mBoardWorldScale[1] / static_cast<float>(NumPiecesY);
+        float blockSizeZ = mBoardWorldScale[2] / static_cast<float>(NumPiecesZ);
+
+        xBlockOut = static_cast<int>(DirectX::XMVectorGetX(position) / blockSizeX);
+        yBlockOut = static_cast<int>(DirectX::XMVectorGetY(position) / blockSizeY);
+        zBlockOut = static_cast<int>(DirectX::XMVectorGetZ(position) / blockSizeZ);
+    }
+
     const GamePiece* GameBoard::GetGamePiece(int xBlock, int yBlock, int zBlock) const
     {
         return mGamePieces[CalcIndex(xBlock, yBlock, zBlock)];

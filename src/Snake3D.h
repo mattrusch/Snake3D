@@ -32,6 +32,7 @@ namespace Snake
         void Init();
 
         DirectX::XMVECTOR GetPosition(int xBlock, int yBlock, int zBlock) const;
+        void GetBlockCoords(const DirectX::XMVECTOR& position, int& xBlockOut, int& yBlockOut, int& zBlockOut) const;
         const GamePiece* GetGamePiece(int xBlock, int yBlock, int zBlock) const;
         void PlaceGamePiece(int xBlock, int yBlock, int zBlock, const DirectX::XMVECTOR& color, int remainingTicks);
         const GamePiece* const* GetGamePieces(size_t* outNumGamePieces) const;

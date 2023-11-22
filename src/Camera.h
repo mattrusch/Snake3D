@@ -33,6 +33,7 @@ namespace Vnm
         void Yaw(float radians);
         void MoveForward(float delta);
         void SetPosition(const DirectX::XMVECTOR& position) { mPosition = position; }
+        DirectX::XMVECTOR GetPosition() const { return mPosition; }
 
     private:
         DirectX::XMVECTOR mPosition;

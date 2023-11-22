@@ -79,7 +79,7 @@ namespace Vnm
     static void HandleMovementGame(uint32_t key, Camera& camera)
     {
         const float rotationScale = 0.5f;
-        const float forwardScale = 0.01f;
+        const float forwardScale = 0.025f;
 
         camera.MoveForward(forwardScale);
 
@@ -112,6 +112,16 @@ namespace Vnm
         {
             HandleMovementGame(mMoveState, *mCurCamera);
             mMoveState = 0;
+
+            // TODO: Make this an int vector or use an array
+            int xBlockCoord;
+            int yBlockCoord;
+            int zBlockCoord;
+            mGameBoard.GetBlockCoords(mCurCamera->GetPosition(), xBlockCoord, yBlockCoord, zBlockCoord);
+            if (mGameBoard.GetGamePiece(xBlockCoord, yBlockCoord, zBlockCoord) == nullptr)
+            {
+                mGameBoard.PlaceGamePiece(xBlockCoord, yBlockCoord, zBlockCoord, DirectX::XMVectorSplatOne(), 10);
+            }
         }
         else
         {
