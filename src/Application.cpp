@@ -38,7 +38,34 @@ namespace Vnm
                         (j == 0) || (j == Snake::NumPiecesY - 1) ||
                         (k == 0) || (k == Snake::NumPiecesZ - 1))
                     {
-                        mGameBoard.PlaceGamePiece(i, j, k, DirectX::XMVectorSet(0.0f, 1.0f, 0.0f, 1.0f), 10);
+                        // TODO: Clean this up
+                        DirectX::XMVECTOR color;
+                        if (i == 0)
+                        {
+                            color = DirectX::XMVectorSet(1.0f, 0.4f, 0.4f, 1.0f);
+                        }
+                        else if (i == Snake::NumPiecesX - 1)
+                        {
+                            color = DirectX::XMVectorSet(1.0f, 0.4f, 1.0f, 1.0f);
+                        }
+                        else if (j == 0)
+                        {
+                            color = DirectX::XMVectorSet(0.4f, 0.4f, 1.0f, 1.0f);
+                        }
+                        else if (j == Snake::NumPiecesY - 1)
+                        {
+                            color = DirectX::XMVectorSet(0.4f, 1.0f, 1.0f, 1.0f);
+                        }
+                        else if (k == 0)
+                        {
+                            color = DirectX::XMVectorSet(0.4f, 1.0f, 0.4f, 1.0f);
+                        }
+                        else if (k == Snake::NumPiecesZ - 1)
+                        {
+                            color = DirectX::XMVectorSet(1.0f, 1.0f, 0.4f, 1.0f);
+                        }
+
+                        mGameBoard.PlaceGamePiece(i, j, k, color, 10);
                     }
                 }
             }
@@ -120,7 +147,7 @@ namespace Vnm
             mGameBoard.GetBlockCoords(mCurCamera->GetPosition(), xBlockCoord, yBlockCoord, zBlockCoord);
             if (mGameBoard.GetGamePiece(xBlockCoord, yBlockCoord, zBlockCoord) == nullptr)
             {
-                mGameBoard.PlaceGamePiece(xBlockCoord, yBlockCoord, zBlockCoord, DirectX::XMVectorSplatOne(), 10);
+                mGameBoard.PlaceGamePiece(xBlockCoord, yBlockCoord, zBlockCoord, DirectX::XMVectorSet(1.0f, 1.0f, 1.0f, 0.0f), 10);
             }
         }
         else

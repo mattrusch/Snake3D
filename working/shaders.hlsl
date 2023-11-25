@@ -8,6 +8,7 @@ cbuffer SceneConstantBuffer : register(b0)
 cbuffer OffsetBuffer : register(b1)
 {
     float4x4 instanceWorldViewProj;
+    float4   instanceColor;
 };
 
 Texture2D gTexture : register(t0);
@@ -34,5 +35,5 @@ PsInput VsMain(float4 position : POSITION, float4 color : COLOR, float2 texcoord
 float4 PsMain(PsInput input) : SV_TARGET
 {
     float4 texCol = gTexture.Sample(gSampler, input.texcoords);
-    return input.color * texCol;
+    return saturate(input.color + instanceColor.wwww) * saturate(texCol + 0.95f * instanceColor.wwww) * instanceColor;
 }

@@ -89,7 +89,7 @@ namespace Snake
         
         GamePiece* gamePiece = AllocGamePiece();
         gamePiece->mRemainingTicks = remainingTicks;
-        gamePiece->mColor = DirectX::XMVectorSet(1.0f, 1.0f, 1.0f, 1.0f);
+        gamePiece->mColor = color;
         gamePiece->mPosition = GetPosition(xBlock, yBlock, zBlock);
         mGamePieces[index] = gamePiece;
     }

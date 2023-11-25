@@ -20,6 +20,7 @@ class SceneConstantBuffer
 {
 public:
     DirectX::XMMATRIX mWorldViewProj;
+    DirectX::XMVECTOR mColor;
 };
 
 class D3dContext
@@ -628,9 +629,14 @@ void Render(const Snake::GamePiece* const* gamePieces, size_t numGamePieces, con
             continue;
         }
 
-        size_t offset = ALIGN_256(sizeof(worldViewProj)) * i;
+        // Instance transformation
+        size_t offset = ALIGN_256(sizeof(SceneConstantBuffer)) * i;
         worldViewProj = matRotation * DirectX::XMMatrixTranslationFromVector(gamePieces[i]->mPosition) * matLookAt * matPerspective;
         memcpy(gDevice.mpCbvDataBegin + offset, &worldViewProj, sizeof(worldViewProj));
+        
+        // Instance color
+        offset += sizeof(worldViewProj);
+        memcpy(gDevice.mpCbvDataBegin + offset, &gamePieces[i]->mColor, sizeof(gamePieces[i]->mColor));
     }
 
     PopulateCommandList(numGamePieces);
