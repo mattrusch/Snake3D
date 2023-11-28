@@ -25,8 +25,6 @@ namespace Vnm
         Init(mWindow.GetHandle());
         mSnake.SetPosition(DirectX::XMVectorSet(5.0f, 5.0f, 5.0f, 0.0f));
         mFreeCamera.SetPosition(DirectX::XMVectorSet(5.0f, 5.0f, 5.0f, 0.0f));
-        mGameCamera.SetPosition(DirectX::XMVectorAdd(mSnake.GetPosition(), GameCameraOffset));
-        mGameCamera.Yaw(-DirectX::XM_PIDIV2);
 
         mGameBoard.Init();
 

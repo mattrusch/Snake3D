@@ -613,11 +613,10 @@ void PopulateCommandList(size_t numGamePieces)
 
 void Render(const Snake::GamePiece* const* gamePieces, size_t numGamePieces, const DirectX::XMMATRIX& lookAt, float elapsedSeconds)
 {
-    DirectX::XMMATRIX matRotation = DirectX::XMMatrixRotationY(totalRotation);
     DirectX::XMMATRIX matLookAt = lookAt;
     DirectX::XMMATRIX matPerspective = DirectX::XMMatrixPerspectiveFovLH(1.0f, static_cast<float>(gWidth) / static_cast<float>(gHeight), 0.1f, 100.0f);
 
-    DirectX::XMMATRIX worldViewProj = matRotation * matLookAt * matPerspective;
+    DirectX::XMMATRIX worldViewProj = matLookAt * matPerspective;
     for (int i = 0; i < numGamePieces; i++)
     {
         if (gamePieces[i] == nullptr)
@@ -627,7 +626,7 @@ void Render(const Snake::GamePiece* const* gamePieces, size_t numGamePieces, con
 
         // Instance transformation
         size_t offset = ALIGN_256(sizeof(SceneConstantBuffer)) * i;
-        worldViewProj = matRotation * DirectX::XMMatrixTranslationFromVector(gamePieces[i]->mPosition) * matLookAt * matPerspective;
+        worldViewProj = DirectX::XMMatrixTranslationFromVector(gamePieces[i]->mPosition) * matLookAt * matPerspective;
         memcpy(gDevice.mpCbvDataBegin + offset, &worldViewProj, sizeof(worldViewProj));
         
         // Instance color
