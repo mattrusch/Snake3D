@@ -34,4 +34,16 @@ namespace Vnm
         DirectX::XMVECTOR scaledForward = DirectX::XMVectorMultiply(mForward, scale);
         mPosition = DirectX::XMVectorAdd(mPosition, scaledForward);
     }
+
+    // Recalculates forward and up based on current position and lookAtPos and right arguments
+    void Camera::SetLookAtRecalcBasis(const DirectX::XMVECTOR& lookAtPos, const DirectX::XMVECTOR& right)
+    {
+        // TODO: Assert that right is unit length?
+        DirectX::XMVECTOR forward = DirectX::XMVector3Normalize(DirectX::XMVectorSubtract(lookAtPos, mPosition));
+        DirectX::XMVECTOR up = DirectX::XMVector3Cross(forward, right);
+
+        mForward = forward;
+        mUp = up;
+        mRight = right;
+    }
 }

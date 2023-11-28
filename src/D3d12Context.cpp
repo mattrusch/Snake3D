@@ -613,10 +613,6 @@ void PopulateCommandList(size_t numGamePieces)
 
 void Render(const Snake::GamePiece* const* gamePieces, size_t numGamePieces, const DirectX::XMMATRIX& lookAt, float elapsedSeconds)
 {
-    // TODO: Pull out ambient rotation code once sure it's unwanted
-    static float totalRotation = 0.0f;
-    //totalRotation += elapsedSeconds * 0.5f;
-
     DirectX::XMMATRIX matRotation = DirectX::XMMatrixRotationY(totalRotation);
     DirectX::XMMATRIX matLookAt = lookAt;
     DirectX::XMMATRIX matPerspective = DirectX::XMMatrixPerspectiveFovLH(1.0f, static_cast<float>(gWidth) / static_cast<float>(gHeight), 0.1f, 100.0f);

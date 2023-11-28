@@ -11,6 +11,7 @@ namespace Vnm
     constexpr uint32_t TurnRightBit   = 1 << 3;
     constexpr uint32_t TiltUpBit      = 1 << 4;
     constexpr uint32_t TiltDownBit    = 1 << 5;
+    const DirectX::XMVECTOR GameCameraOffset = DirectX::XMVectorSet(5.0f, 0.0f, 0.0f, 0.0f);
 
     void Application::Startup(HINSTANCE instance, int cmdShow)
     {
@@ -22,8 +23,10 @@ namespace Vnm
         mWindow.Create(instance, cmdShow, winDesc);
 
         Init(mWindow.GetHandle());
+        mSnake.SetPosition(DirectX::XMVectorSet(5.0f, 5.0f, 5.0f, 0.0f));
         mFreeCamera.SetPosition(DirectX::XMVectorSet(5.0f, 5.0f, 5.0f, 0.0f));
-        mGameCamera.SetPosition(DirectX::XMVectorSet(5.0f, 5.0f, 5.0f, 0.0f));
+        mGameCamera.SetPosition(DirectX::XMVectorAdd(mSnake.GetPosition(), GameCameraOffset));
+        mGameCamera.Yaw(-DirectX::XM_PIDIV2);
 
         mGameBoard.Init();
 
@@ -137,18 +140,24 @@ namespace Vnm
 
         if (GameIsActive())
         {
-            HandleMovementGame(mMoveState, *mCurCamera);
+            HandleMovementGame(mMoveState, mSnake);
             mMoveState = 0;
 
-            // TODO: Make this an int vector or use an array
             int xBlockCoord;
             int yBlockCoord;
             int zBlockCoord;
-            mGameBoard.GetBlockCoords(mCurCamera->GetPosition(), xBlockCoord, yBlockCoord, zBlockCoord);
+            mGameBoard.GetBlockCoords(mSnake.GetPosition(), xBlockCoord, yBlockCoord, zBlockCoord);
             if (mGameBoard.GetGamePiece(xBlockCoord, yBlockCoord, zBlockCoord) == nullptr)
             {
                 mGameBoard.PlaceGamePiece(xBlockCoord, yBlockCoord, zBlockCoord, DirectX::XMVectorSet(1.0f, 1.0f, 1.0f, 0.0f), 10);
             }
+
+            // Look at snake head from behind and above
+            DirectX::XMVECTOR positionOffset = DirectX::XMVectorSubtract(mSnake.GetUp(), mSnake.GetForward());
+            const float positionOffsetScale = 3.0f;
+            positionOffset = DirectX::XMVectorScale(positionOffset, positionOffsetScale);
+            mGameCamera.SetPosition(DirectX::XMVectorAdd(mSnake.GetPosition(), positionOffset));
+            mGameCamera.SetLookAtRecalcBasis(mSnake.GetPosition(), mSnake.GetRight());
         }
         else
         {

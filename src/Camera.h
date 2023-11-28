@@ -32,8 +32,15 @@ namespace Vnm
         void Pitch(float radians);
         void Yaw(float radians);
         void MoveForward(float delta);
+        void SetLookAtRecalcBasis(const DirectX::XMVECTOR& lookAtPos, const DirectX::XMVECTOR& right);
+        
+        // Accessors
         void SetPosition(const DirectX::XMVECTOR& position) { mPosition = position; }
-        DirectX::XMVECTOR GetPosition() const { return mPosition; }
+
+        DirectX::XMVECTOR GetPosition() const               { return mPosition; }
+        DirectX::XMVECTOR GetForward() const                { return mForward; }
+        DirectX::XMVECTOR GetUp() const                     { return mUp; }
+        DirectX::XMVECTOR GetRight() const                  { return mRight; }
 
     private:
         DirectX::XMVECTOR mPosition;

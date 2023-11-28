@@ -30,6 +30,7 @@ namespace Vnm
         Snake::GameBoard mGameBoard;
 
         Window    mWindow;
+        Camera    mSnake;
         Camera    mFreeCamera;
         Camera    mGameCamera;
         Camera*   mCurCamera = &mFreeCamera;
