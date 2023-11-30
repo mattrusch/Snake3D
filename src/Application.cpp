@@ -151,9 +151,14 @@ namespace Vnm
             }
 
             // Look at snake head from behind and above
-            DirectX::XMVECTOR positionOffset = DirectX::XMVectorSubtract(mSnake.GetUp(), mSnake.GetForward());
             const float positionOffsetScale = 3.0f;
-            positionOffset = DirectX::XMVectorScale(positionOffset, positionOffsetScale);
+            static DirectX::XMVECTOR prevPositionOffset = DirectX::XMVectorSet(positionOffsetScale, 0.0f, 0.0f, 0.0f);
+
+            // Cheap smooth follow, slerp would probably be better
+            DirectX::XMVECTOR positionOffset = DirectX::XMVectorSubtract(mSnake.GetUp(), mSnake.GetForward());
+            positionOffset = DirectX::XMVectorLerp(prevPositionOffset, DirectX::XMVectorScale(positionOffset, positionOffsetScale), 0.25f);
+            prevPositionOffset = positionOffset;
+            
             mGameCamera.SetPosition(DirectX::XMVectorAdd(mSnake.GetPosition(), positionOffset));
             mGameCamera.SetLookAtRecalcBasis(mSnake.GetPosition(), mSnake.GetRight());
         }
