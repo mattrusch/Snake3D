@@ -155,12 +155,24 @@ namespace Vnm
             static DirectX::XMVECTOR prevPositionOffset = DirectX::XMVectorSet(positionOffsetScale, 0.0f, 0.0f, 0.0f);
 
             // Cheap smooth follow, slerp would probably be better
-            DirectX::XMVECTOR positionOffset = DirectX::XMVectorSubtract(mSnake.GetUp(), mSnake.GetForward());
-            positionOffset = DirectX::XMVectorLerp(prevPositionOffset, DirectX::XMVectorScale(positionOffset, positionOffsetScale), 0.25f);
+            DirectX::XMVECTOR positionOffset = DirectX::XMVectorScale(DirectX::XMVectorSubtract(mSnake.GetUp(), mSnake.GetForward()), positionOffsetScale);
+            DirectX::XMVECTOR length = DirectX::XMVector3Length(positionOffset);
+
+            // Forcing consistent length here might be overkill
+            const float lerpFactor = 0.1f;
+            positionOffset = DirectX::XMVectorLerp(prevPositionOffset, positionOffset, lerpFactor);
+            positionOffset = DirectX::XMVector3Normalize(positionOffset);
+            positionOffset = DirectX::XMVectorMultiply(positionOffset, length);
             prevPositionOffset = positionOffset;
             
+            // Blend right vector as well
+            static DirectX::XMVECTOR prevRight = mSnake.GetRight();
+            DirectX::XMVECTOR right = mSnake.GetRight();
+            right = DirectX::XMVectorLerp(prevRight, right, lerpFactor);
+            prevRight = right;
+
             mGameCamera.SetPosition(DirectX::XMVectorAdd(mSnake.GetPosition(), positionOffset));
-            mGameCamera.SetLookAtRecalcBasis(mSnake.GetPosition(), mSnake.GetRight());
+            mGameCamera.SetLookAtRecalcBasis(mSnake.GetPosition(), right);
         }
         else
         {
