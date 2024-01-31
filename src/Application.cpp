@@ -2,6 +2,7 @@
 
 #include "Application.h"
 #include "D3d12Context.h"
+#include <climits>
 
 namespace Vnm
 {
@@ -66,7 +67,7 @@ namespace Vnm
                             color = DirectX::XMVectorSet(1.0f, 1.0f, 0.4f, 1.0f);
                         }
 
-                        mGameBoard.PlaceGamePiece(i, j, k, color, 10);
+                        mGameBoard.PlaceGamePiece(i, j, k, color, INT_MAX, Snake::GamePieceType::Wall);
                     }
                 }
             }
@@ -145,9 +146,35 @@ namespace Vnm
             int yBlockCoord;
             int zBlockCoord;
             mGameBoard.GetBlockCoords(mSnake.GetPosition(), xBlockCoord, yBlockCoord, zBlockCoord);
-            if (mGameBoard.GetGamePiece(xBlockCoord, yBlockCoord, zBlockCoord) == nullptr)
+
+            // Check if snake head has moved into a new block
+            if (xBlockCoord != mPlayerState.mCurBlockCoord[0] ||
+                yBlockCoord != mPlayerState.mCurBlockCoord[1] ||
+                zBlockCoord != mPlayerState.mCurBlockCoord[2])
             {
-                mGameBoard.PlaceGamePiece(xBlockCoord, yBlockCoord, zBlockCoord, DirectX::XMVectorSet(1.0f, 1.0f, 1.0f, 0.0f), 10);
+                // Test for intersection
+                const Snake::GamePiece* gamePiece = mGameBoard.GetGamePiece(xBlockCoord, yBlockCoord, zBlockCoord);
+                if (gamePiece == nullptr)
+                {
+                    mGameBoard.PlaceGamePiece(xBlockCoord, yBlockCoord, zBlockCoord, DirectX::XMVectorSet(1.0f, 1.0f, 1.0f, 0.0f), mPlayerState.mBodyLength, Snake::GamePieceType::SnakeBody);
+                }
+                else
+                {
+                    // Hitting wall or snake piece ends game
+                    if (gamePiece->mGamePieceType == Snake::GamePieceType::SnakeBody ||
+                        gamePiece->mGamePieceType == Snake::GamePieceType::Wall)
+                    {
+                        // TODO: Stand in until reset is implemented
+                        ToggleGameState();
+                    }
+
+                    // Powerup increases length
+                    // TODO
+                }
+
+                mPlayerState.mCurBlockCoord[0] = xBlockCoord;
+                mPlayerState.mCurBlockCoord[1] = yBlockCoord;
+                mPlayerState.mCurBlockCoord[2] = zBlockCoord;
             }
 
             // Look at snake head from behind and above

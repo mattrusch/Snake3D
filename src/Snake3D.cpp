@@ -82,13 +82,14 @@ namespace Snake
         mGamePieceFreeList = gamePiece;
     }
 
-    void GameBoard::PlaceGamePiece(int xBlock, int yBlock, int zBlock, const DirectX::XMVECTOR& color, int remainingTicks)
+    void GameBoard::PlaceGamePiece(int xBlock, int yBlock, int zBlock, const DirectX::XMVECTOR& color, int remainingTicks, GamePieceType gamePieceType)
     {
         size_t index = CalcIndex(xBlock, yBlock, zBlock);
         assert(mGamePieces[index] == nullptr);
         
         GamePiece* gamePiece = AllocGamePiece();
         gamePiece->mRemainingTicks = remainingTicks;
+        gamePiece->mGamePieceType = gamePieceType;
         gamePiece->mColor = color;
         gamePiece->mPosition = GetPosition(xBlock, yBlock, zBlock);
         mGamePieces[index] = gamePiece;

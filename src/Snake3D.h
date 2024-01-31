@@ -6,6 +6,13 @@
 
 namespace Snake
 {
+    enum class GamePieceType
+    {
+        SnakeBody,
+        PowerUp,
+        Wall
+    };
+
     class GamePiece
     {
     public:
@@ -14,8 +21,9 @@ namespace Snake
 
         DirectX::XMVECTOR mColor;
         DirectX::XMVECTOR mPosition;
-        GamePiece* mNext;
+        GamePiece*        mNext;
         int               mRemainingTicks;
+        GamePieceType     mGamePieceType;
     };
 
     constexpr size_t NumPiecesX = 16;
@@ -34,7 +42,7 @@ namespace Snake
         DirectX::XMVECTOR GetPosition(int xBlock, int yBlock, int zBlock) const;
         void GetBlockCoords(const DirectX::XMVECTOR& position, int& xBlockOut, int& yBlockOut, int& zBlockOut) const;
         const GamePiece* GetGamePiece(int xBlock, int yBlock, int zBlock) const;
-        void PlaceGamePiece(int xBlock, int yBlock, int zBlock, const DirectX::XMVECTOR& color, int remainingTicks);
+        void PlaceGamePiece(int xBlock, int yBlock, int zBlock, const DirectX::XMVECTOR& color, int remainingTicks, GamePieceType gamePieceType);
         const GamePiece* const* GetGamePieces(size_t* outNumGamePieces) const;
 
     private:
