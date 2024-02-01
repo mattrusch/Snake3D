@@ -46,4 +46,11 @@ namespace Vnm
         mUp = up;
         mRight = right;
     }
+
+    void Camera::ResetBasis()
+    {
+        mForward = DirectX::XMVectorSet(0.0f, 0.0f, 1.0f, 1.0f);
+        mUp = DirectX::XMVectorSet(0.0f, 1.0f, 0.0f, 1.0f);
+        mRight = DirectX::XMVectorSet(1.0f, 0.0f, 0.0f, 1.0f);
+    }
 }

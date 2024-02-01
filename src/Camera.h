@@ -33,6 +33,7 @@ namespace Vnm
         void Yaw(float radians);
         void MoveForward(float delta);
         void SetLookAtRecalcBasis(const DirectX::XMVECTOR& lookAtPos, const DirectX::XMVECTOR& right);
+        void ResetBasis();
         
         // Accessors
         void SetPosition(const DirectX::XMVECTOR& position) { mPosition = position; }

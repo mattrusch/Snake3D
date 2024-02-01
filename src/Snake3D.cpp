@@ -32,6 +32,17 @@ namespace Snake
         mGamePieceFreeList = mGamePiecePool;
     }
 
+    void GameBoard::Reset()
+    {
+        // Reset pool to initial state
+        Init();
+
+        for (size_t i = 0; i < NumGamePieces; i++)
+        {
+            mGamePieces[i] = nullptr;
+        }
+    }
+
     DirectX::XMVECTOR GameBoard::GetPosition(int xBlock, int yBlock, int zBlock) const
     {
         return DirectX::XMVectorSet(

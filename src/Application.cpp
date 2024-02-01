@@ -14,21 +14,8 @@ namespace Vnm
     constexpr uint32_t TiltDownBit    = 1 << 5;
     const DirectX::XMVECTOR GameCameraOffset = DirectX::XMVectorSet(5.0f, 0.0f, 0.0f, 0.0f);
 
-    void Application::Startup(HINSTANCE instance, int cmdShow)
+    void SetupWalls(Snake::GameBoard& gameBoard)
     {
-        // Create main window and device
-        Window::WindowDesc winDesc;
-        winDesc.mWidth = 1024;
-        winDesc.mHeight = 1024;
-        winDesc.mParentApplication = this;
-        mWindow.Create(instance, cmdShow, winDesc);
-
-        Init(mWindow.GetHandle());
-        mSnake.SetPosition(DirectX::XMVectorSet(5.0f, 5.0f, 5.0f, 0.0f));
-        mFreeCamera.SetPosition(DirectX::XMVectorSet(5.0f, 5.0f, 5.0f, 0.0f));
-
-        mGameBoard.Init();
-
         // Place pieces around the borders
         for (int i = 0; i < Snake::NumPiecesX; i++)
         {
@@ -67,11 +54,36 @@ namespace Vnm
                             color = DirectX::XMVectorSet(1.0f, 1.0f, 0.4f, 1.0f);
                         }
 
-                        mGameBoard.PlaceGamePiece(i, j, k, color, INT_MAX, Snake::GamePieceType::Wall);
+                        gameBoard.PlaceGamePiece(i, j, k, color, INT_MAX, Snake::GamePieceType::Wall);
                     }
                 }
             }
         }
+    }
+
+    void Application::Startup(HINSTANCE instance, int cmdShow)
+    {
+        // Create main window and device
+        Window::WindowDesc winDesc;
+        winDesc.mWidth = 1024;
+        winDesc.mHeight = 1024;
+        winDesc.mParentApplication = this;
+        mWindow.Create(instance, cmdShow, winDesc);
+
+        Init(mWindow.GetHandle());
+        mSnake.SetPosition(DirectX::XMVectorSet(5.0f, 5.0f, 5.0f, 0.0f));
+        mFreeCamera.SetPosition(DirectX::XMVectorSet(5.0f, 5.0f, 5.0f, 0.0f));
+
+        mGameBoard.Init();
+        SetupWalls(mGameBoard);
+    }
+
+    void Application::Reset()
+    {
+        mSnake.SetPosition(DirectX::XMVectorSet(5.0f, 5.0f, 5.0f, 0.0f));
+        mSnake.ResetBasis();
+        mGameBoard.Reset();
+        SetupWalls(mGameBoard);
     }
 
     static void HandleMovement(uint32_t key, Camera& camera)
@@ -164,7 +176,7 @@ namespace Vnm
                     if (gamePiece->mGamePieceType == Snake::GamePieceType::SnakeBody ||
                         gamePiece->mGamePieceType == Snake::GamePieceType::Wall)
                     {
-                        // TODO: Stand in until reset is implemented
+                        Reset();
                         ToggleGameState();
                     }
 

@@ -38,6 +38,7 @@ namespace Snake
         ~GameBoard() = default;
 
         void Init();
+        void Reset();
 
         DirectX::XMVECTOR GetPosition(int xBlock, int yBlock, int zBlock) const;
         void GetBlockCoords(const DirectX::XMVECTOR& position, int& xBlockOut, int& yBlockOut, int& zBlockOut) const;

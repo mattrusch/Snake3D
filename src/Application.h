@@ -28,6 +28,7 @@ namespace Vnm
         ~Application() = default;
 
         void Startup(HINSTANCE instance, int cmdShow);
+        void Reset();
         void Mainloop();
         void Shutdown();
 

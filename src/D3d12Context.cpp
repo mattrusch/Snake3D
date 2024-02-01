@@ -621,6 +621,10 @@ void Render(const Snake::GamePiece* const* gamePieces, size_t numGamePieces, con
     {
         if (gamePieces[i] == nullptr)
         {
+            // TODO: HACK. Don't draw these
+            size_t offset = ALIGN_256(sizeof(SceneConstantBuffer)) * i;
+            worldViewProj = DirectX::XMMatrixTranslationFromVector(DirectX::XMVectorSet(0.0f, 0.0f, 0.0f, 0.0f)) * matLookAt * matPerspective;
+            memcpy(gDevice.mpCbvDataBegin + offset, &worldViewProj, sizeof(worldViewProj));
             continue;
         }
 
