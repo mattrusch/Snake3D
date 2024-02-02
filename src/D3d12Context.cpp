@@ -10,6 +10,7 @@
 #include "Window.h"
 #include "Snake3D.h"
 #include <cassert>
+#include <bitset>
 
 constexpr size_t ALIGN_256(size_t in)
 {
@@ -557,7 +558,7 @@ void Update(const DirectX::XMMATRIX& lookAt, float elapsedSeconds)
     memcpy(gDevice.mpCbvDataBegin, &worldViewProj, sizeof(worldViewProj));
 }
 
-void PopulateCommandList(size_t numGamePieces)
+void PopulateCommandList(size_t numGamePieces, const std::bitset<Snake::NumGamePieces>& drawMask)
 {
     // Command list allocators can only be reset when the associated command lists have finished execution on the GPU; use fences to determine GPU execution progress
     D3D_CHECK(gDevice.mCommandAllocator->Reset());
@@ -600,6 +601,11 @@ void PopulateCommandList(size_t numGamePieces)
     // Set root constant buffer view for instance
     for (int i = 0; i < numGamePieces; i++)
     {
+        if (drawMask[i] == 0)
+        {
+            continue;
+        }
+
         gDevice.mCommandList->SetGraphicsRootConstantBufferView(1, gDevice.mConstantBuffer->GetGPUVirtualAddress() + ALIGN_256(sizeof(SceneConstantBuffer)) * i);
         gDevice.mCommandList->DrawIndexedInstanced(36, 1, 0, 0, 0);
     }
@@ -616,16 +622,20 @@ void Render(const Snake::GamePiece* const* gamePieces, size_t numGamePieces, con
     DirectX::XMMATRIX matLookAt = lookAt;
     DirectX::XMMATRIX matPerspective = DirectX::XMMatrixPerspectiveFovLH(1.0f, static_cast<float>(gWidth) / static_cast<float>(gHeight), 0.1f, 100.0f);
 
+    assert(numGamePieces <= Snake::NumGamePieces);
+    static std::bitset<Snake::NumGamePieces> drawMask(0);
+
     DirectX::XMMATRIX worldViewProj = matLookAt * matPerspective;
     for (int i = 0; i < numGamePieces; i++)
     {
         if (gamePieces[i] == nullptr)
         {
-            // TODO: HACK. Don't draw these
-            size_t offset = ALIGN_256(sizeof(SceneConstantBuffer)) * i;
-            worldViewProj = DirectX::XMMatrixTranslationFromVector(DirectX::XMVectorSet(0.0f, 0.0f, 0.0f, 0.0f)) * matLookAt * matPerspective;
-            memcpy(gDevice.mpCbvDataBegin + offset, &worldViewProj, sizeof(worldViewProj));
+            drawMask[i] = 0;
             continue;
+        }
+        else
+        {
+            drawMask[i] = 1;
         }
 
         // Instance transformation
@@ -638,7 +648,7 @@ void Render(const Snake::GamePiece* const* gamePieces, size_t numGamePieces, con
         memcpy(gDevice.mpCbvDataBegin + offset, &gamePieces[i]->mColor, sizeof(gamePieces[i]->mColor));
     }
 
-    PopulateCommandList(numGamePieces);
+    PopulateCommandList(numGamePieces, drawMask);
 
     ID3D12CommandList* ppCommandLists[] = { gDevice.mCommandList.Get() };
     gDevice.mCommandQueue->ExecuteCommandLists(_countof(ppCommandLists), ppCommandLists);
