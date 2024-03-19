@@ -14,7 +14,7 @@ namespace Vnm
     constexpr uint32_t TiltDownBit    = 1 << 5;
     const DirectX::XMVECTOR GameCameraOffset = DirectX::XMVectorSet(5.0f, 0.0f, 0.0f, 0.0f);
 
-    void SetupWalls(Snake::GameBoard& gameBoard)
+    static void SetupWalls(Snake::GameBoard& gameBoard)
     {
         // Place pieces around the borders
         for (int i = 0; i < Snake::NumPiecesX; i++)
@@ -61,6 +61,14 @@ namespace Vnm
         }
     }
 
+    static void PlacePowerUp(Snake::GameBoard& gameBoard)
+    {
+        DirectX::XMVECTOR color = DirectX::XMVectorSet(0.7f, 0.8f, 1.0f, 1.0f);
+
+        // TODO: Randomize
+        gameBoard.PlaceGamePiece(3, 3, 3, color, INT_MAX, Snake::GamePieceType::PowerUp);
+    }
+
     void Application::Startup(HINSTANCE instance, int cmdShow)
     {
         // Create main window and device
@@ -76,6 +84,7 @@ namespace Vnm
 
         mGameBoard.Init();
         SetupWalls(mGameBoard);
+        PlacePowerUp(mGameBoard);
     }
 
     void Application::Reset()
@@ -84,6 +93,7 @@ namespace Vnm
         mSnake.ResetBasis();
         mGameBoard.Reset();
         SetupWalls(mGameBoard);
+        PlacePowerUp(mGameBoard);
     }
 
     static void HandleMovement(uint32_t key, Camera& camera)
@@ -147,7 +157,9 @@ namespace Vnm
         static uint32_t lastTime = GetTickCount();
         uint32_t elapsedTime = GetTickCount() - lastTime;
         lastTime = GetTickCount();
-        float elapsedSeconds = static_cast<float>(elapsedTime) * 0.001f;
+
+        const float timeScale = 0.001f;
+        float elapsedSeconds = static_cast<float>(elapsedTime) * timeScale;
 
         if (GameIsActive())
         {
@@ -181,7 +193,13 @@ namespace Vnm
                     }
 
                     // Powerup increases length
-                    // TODO
+                    if (gamePiece->mGamePieceType == Snake::GamePieceType::PowerUp)
+                    {
+                        mGameBoard.RemoveGamePiece(xBlockCoord, yBlockCoord, zBlockCoord);
+
+                        // TODO: Increas snake length
+                        // TODO: Place another random power up
+                    }
                 }
 
                 mPlayerState.mCurBlockCoord[0] = xBlockCoord;

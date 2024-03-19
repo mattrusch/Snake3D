@@ -105,4 +105,15 @@ namespace Snake
         gamePiece->mPosition = GetPosition(xBlock, yBlock, zBlock);
         mGamePieces[index] = gamePiece;
     }
+
+    void GameBoard:: RemoveGamePiece(int xBlock, int yBlock, int zBlock)
+    {
+        size_t index = CalcIndex(xBlock, yBlock, zBlock);
+        GamePiece* gamePiece = mGamePieces[index];
+        assert(gamePiece != nullptr);
+
+        FreeGamePiece(gamePiece);
+        mGamePieces[index] = nullptr;
+    }
+
 } // namespace Snake
