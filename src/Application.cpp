@@ -78,6 +78,7 @@ namespace Vnm
         int y = distributionY(randomGenerator);
         int z = distributionZ(randomGenerator);
 
+        // TODO: Will possibly endless loop at the very end of the game, check for win condition
         while (gameBoard.GetGamePiece(x, y, z) != nullptr)
         {
             // If random place is already occupied, find another
@@ -114,6 +115,7 @@ namespace Vnm
         mGameBoard.Reset();
         SetupWalls(mGameBoard);
         PlacePowerUp(mGameBoard);
+        mPlayerState.mBodyLength = 1;
     }
 
     static void HandleMovement(uint32_t key, Camera& camera)
@@ -217,18 +219,43 @@ namespace Vnm
                     {
                         // Replace power-up with snake body piece
                         mGameBoard.RemoveGamePiece(xBlockCoord, yBlockCoord, zBlockCoord);
-                        mGameBoard.PlaceGamePiece(xBlockCoord, yBlockCoord, zBlockCoord, DirectX::XMVectorSet(1.0f, 1.0f, 1.0f, 0.0f), mPlayerState.mBodyLength, Snake::GamePieceType::SnakeBody);
 
                         // Place a new power-up
                         PlacePowerUp(mGameBoard);
 
-                        // TODO: Increas snake length
+                        // Increase body length
+                        mGameBoard.PlaceGamePiece(xBlockCoord, yBlockCoord, zBlockCoord, DirectX::XMVectorSet(1.0f, 1.0f, 1.0f, 0.0f), ++mPlayerState.mBodyLength, Snake::GamePieceType::SnakeBody);
+
+                        // TODO: Test win condition
                     }
                 }
 
                 mPlayerState.mCurBlockCoord[0] = xBlockCoord;
                 mPlayerState.mCurBlockCoord[1] = yBlockCoord;
                 mPlayerState.mCurBlockCoord[2] = zBlockCoord;
+
+                // Update pieces on board (excluding walls)
+                for (int i = 1; i < Snake::NumPiecesX - 1; i++)
+                {
+                    for (int j = 1; j < Snake::NumPiecesY - 1; j++)
+                    {
+                        for (int k = 1; k < Snake::NumPiecesZ - 1; k++)
+                        {
+                            Snake::GamePiece* gamePiece = mGameBoard.GetGamePiece(i, j, k);
+                            if (gamePiece == nullptr)
+                            {
+                                continue;
+                            }
+                            else if (gamePiece->mGamePieceType == Snake::GamePieceType::SnakeBody)
+                            {
+                                if (gamePiece->mRemainingTicks-- == 0)
+                                {
+                                    mGameBoard.RemoveGamePiece(i, j, k);
+                                }
+                            }
+                        }
+                    }
+                }
             }
 
             // Look at snake head from behind and above

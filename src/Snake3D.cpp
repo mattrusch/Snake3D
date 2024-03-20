@@ -68,6 +68,11 @@ namespace Snake
         return mGamePieces[CalcIndex(xBlock, yBlock, zBlock)];
     }
 
+    GamePiece* GameBoard::GetGamePiece(int xBlock, int yBlock, int zBlock)
+    {
+        return mGamePieces[CalcIndex(xBlock, yBlock, zBlock)];
+    }
+
     GamePiece* GameBoard::AllocGamePiece()
     {
         assert(mGamePieceFreeList != nullptr);
