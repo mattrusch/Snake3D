@@ -3,6 +3,7 @@
 #include "Application.h"
 #include "D3d12Context.h"
 #include <climits>
+#include <random>
 
 namespace Vnm
 {
@@ -63,10 +64,29 @@ namespace Vnm
 
     static void PlacePowerUp(Snake::GameBoard& gameBoard)
     {
-        DirectX::XMVECTOR color = DirectX::XMVectorSet(0.7f, 0.8f, 1.0f, 1.0f);
+        const DirectX::XMVECTOR color = DirectX::XMVectorSet(0.7f, 0.8f, 1.0f, 1.0f);
 
-        // TODO: Randomize
-        gameBoard.PlaceGamePiece(3, 3, 3, color, INT_MAX, Snake::GamePieceType::PowerUp);
+        // TODO: Give random generation a home
+        static std::random_device randomDevice;
+        static std::mt19937 randomGenerator(randomDevice());
+        using DistributionType = std::uniform_int_distribution <std::mt19937::result_type>;
+        static DistributionType distributionX(0, Snake::NumPiecesX - 1);
+        static DistributionType distributionY(0, Snake::NumPiecesY - 1);
+        static DistributionType distributionZ(0, Snake::NumPiecesZ - 1);
+
+        int x = distributionX(randomGenerator);
+        int y = distributionY(randomGenerator);
+        int z = distributionZ(randomGenerator);
+
+        while (gameBoard.GetGamePiece(x, y, z) != nullptr)
+        {
+            // If random place is already occupied, find another
+            x = distributionX(randomGenerator);
+            y = distributionY(randomGenerator);
+            z = distributionZ(randomGenerator);
+        }
+
+        gameBoard.PlaceGamePiece(x, y, z, color, INT_MAX, Snake::GamePieceType::PowerUp);
     }
 
     void Application::Startup(HINSTANCE instance, int cmdShow)
@@ -195,10 +215,14 @@ namespace Vnm
                     // Powerup increases length
                     if (gamePiece->mGamePieceType == Snake::GamePieceType::PowerUp)
                     {
+                        // Replace power-up with snake body piece
                         mGameBoard.RemoveGamePiece(xBlockCoord, yBlockCoord, zBlockCoord);
+                        mGameBoard.PlaceGamePiece(xBlockCoord, yBlockCoord, zBlockCoord, DirectX::XMVectorSet(1.0f, 1.0f, 1.0f, 0.0f), mPlayerState.mBodyLength, Snake::GamePieceType::SnakeBody);
+
+                        // Place a new power-up
+                        PlacePowerUp(mGameBoard);
 
                         // TODO: Increas snake length
-                        // TODO: Place another random power up
                     }
                 }
 
