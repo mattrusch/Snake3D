@@ -1,9 +1,23 @@
 // Camera.cpp
 
 #include "Camera.h"
+#include <cassert>
 
 namespace Vnm
 {
+    constexpr float Epsilon = FLT_EPSILON * 10.0f;
+    static bool ApproxEqual(float val0, float val1)
+    {
+        if (fabs(val1 - val0) < (Epsilon))
+        {
+            return true;
+        }
+        else
+        {
+            return false;
+        }
+    }
+
     // Calculates and returns LookAt matrix
     DirectX::XMMATRIX Camera::CalcLookAt() const
     {
@@ -38,7 +52,7 @@ namespace Vnm
     // Recalculates forward and up based on current position and lookAtPos and right arguments
     void Camera::SetLookAtRecalcBasis(const DirectX::XMVECTOR& lookAtPos, const DirectX::XMVECTOR& right)
     {
-        // TODO: Assert that right is unit length?
+        assert(ApproxEqual(DirectX::XMVectorGetX(DirectX::XMVector3Length(right)), 1.0f));
         DirectX::XMVECTOR forward = DirectX::XMVector3Normalize(DirectX::XMVectorSubtract(lookAtPos, mPosition));
         DirectX::XMVECTOR up = DirectX::XMVector3Cross(forward, right);
 

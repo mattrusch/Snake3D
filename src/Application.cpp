@@ -13,7 +13,15 @@ namespace Vnm
     constexpr uint32_t TurnRightBit   = 1 << 3;
     constexpr uint32_t TiltUpBit      = 1 << 4;
     constexpr uint32_t TiltDownBit    = 1 << 5;
+
     const DirectX::XMVECTOR GameCameraOffset = DirectX::XMVectorSet(5.0f, 0.0f, 0.0f, 0.0f);
+
+    const DirectX::XMVECTOR WallColorXmin = DirectX::XMVectorSet(1.0f, 0.4f, 0.4f, 1.0f);
+    const DirectX::XMVECTOR WallColorXmax = DirectX::XMVectorSet(1.0f, 0.4f, 1.0f, 1.0f);
+    const DirectX::XMVECTOR WallColorYmin = DirectX::XMVectorSet(0.4f, 0.4f, 1.0f, 1.0f);
+    const DirectX::XMVECTOR WallColorYmax = DirectX::XMVectorSet(0.4f, 1.0f, 1.0f, 1.0f);
+    const DirectX::XMVECTOR WallColorZmin = DirectX::XMVectorSet(0.4f, 1.0f, 0.4f, 1.0f);
+    const DirectX::XMVECTOR WallColorZmax = DirectX::XMVectorSet(1.0f, 1.0f, 0.4f, 1.0f);
 
     static void SetupWalls(Snake::GameBoard& gameBoard)
     {
@@ -28,31 +36,30 @@ namespace Vnm
                         (j == 0) || (j == Snake::NumPiecesY - 1) ||
                         (k == 0) || (k == Snake::NumPiecesZ - 1))
                     {
-                        // TODO: Clean this up
                         DirectX::XMVECTOR color;
                         if (i == 0)
                         {
-                            color = DirectX::XMVectorSet(1.0f, 0.4f, 0.4f, 1.0f);
+                            color = WallColorXmin;
                         }
                         else if (i == Snake::NumPiecesX - 1)
                         {
-                            color = DirectX::XMVectorSet(1.0f, 0.4f, 1.0f, 1.0f);
+                            color = WallColorXmax;
                         }
                         else if (j == 0)
                         {
-                            color = DirectX::XMVectorSet(0.4f, 0.4f, 1.0f, 1.0f);
+                            color = WallColorYmin;
                         }
                         else if (j == Snake::NumPiecesY - 1)
                         {
-                            color = DirectX::XMVectorSet(0.4f, 1.0f, 1.0f, 1.0f);
+                            color = WallColorYmax;
                         }
                         else if (k == 0)
                         {
-                            color = DirectX::XMVectorSet(0.4f, 1.0f, 0.4f, 1.0f);
+                            color = WallColorZmin;
                         }
                         else if (k == Snake::NumPiecesZ - 1)
                         {
-                            color = DirectX::XMVectorSet(1.0f, 1.0f, 0.4f, 1.0f);
+                            color = WallColorZmax;
                         }
 
                         gameBoard.PlaceGamePiece(i, j, k, color, INT_MAX, Snake::GamePieceType::Wall);
@@ -66,7 +73,6 @@ namespace Vnm
     {
         const DirectX::XMVECTOR color = DirectX::XMVectorSet(0.7f, 0.8f, 1.0f, 1.0f);
 
-        // TODO: Give random generation a home
         static std::random_device randomDevice;
         static std::mt19937 randomGenerator(randomDevice());
         using DistributionType = std::uniform_int_distribution <std::mt19937::result_type>;
@@ -277,6 +283,7 @@ namespace Vnm
             static DirectX::XMVECTOR prevRight = mSnake.GetRight();
             DirectX::XMVECTOR right = mSnake.GetRight();
             right = DirectX::XMVectorLerp(prevRight, right, lerpFactor);
+            right = DirectX::XMVector3Normalize(right);
             prevRight = right;
 
             mGameCamera.SetPosition(DirectX::XMVectorAdd(mSnake.GetPosition(), positionOffset));
